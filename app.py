@@ -3,16 +3,18 @@ from pdf2image import convert_from_bytes
 import pytesseract
 from PIL import Image, ImageDraw, ImageFont
 import pandas as pd
-import io, re
+import io, re, os
 from pypdf import PdfWriter, PdfReader
 import openpyxl
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 @app.route('/')
 def index():
-    return open('/home/claude/precificador/index.html', encoding='utf-8').read()
+    return open(os.path.join(BASE_DIR, 'index.html'), encoding='utf-8').read()
 
 @app.route('/processar', methods=['POST'])
 def processar():
@@ -93,4 +95,4 @@ def modelo():
         as_attachment=True, download_name='modelo_precos.xlsx')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7860)
+    app.run(host='0.0.0.0', port=10000)
