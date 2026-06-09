@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Precificador Tilibra</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #e8f0f8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 16px;
+  }
+
+  .logo-bar {
+    background: #1a3a5c;
+    color: white;
+    width: 100%;
+    max-width: 560px;
+    border-radius: 12px 12px 0 0;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-box {
+    background: #d42b2b;
+    color: white;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 1px;
+    padding: 5px 10px;
+    border-radius: 4px;
+  }
+  .logo-bar h1 { font-size: 17px; font-weight: 600; }
+
+  .box {
+    background: white;
+    width: 100%;
+    max-width: 560px;
+    border-radius: 0 0 12px 12px;
+    padding: 32px 28px 28px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+
+  .step {
+    margin-bottom: 28px;
+  }
+
+  .step-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a3a5c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-label .n {
+    background: #2563a8;
+    color: white;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 2px dashed #b0c4de;
+    border-radius: 10px;
+    padding: 18px 20px;
+    cursor: pointer;
+    background: #f4f8ff;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: left;
+  }
+  .upload-btn:hover { border-color: #2563a8; background: #eaf1fb; }
+  .upload-btn.ok { border-color: #1a7a4a; border-style: solid; background: #eef8f3; }
+  .upload-btn input { display: none; }
+  .upload-btn .u-icon { font-size: 28px; flex-shrink: 0; }
+  .upload-btn .u-text .u-main { font-size: 15px; font-weight: 600; color: #1a2535; }
+  .upload-btn .u-text .u-sub { font-size: 12px; color: #6a7a8a; margin-top: 2px; }
+  .upload-btn .u-text .u-ok { font-size: 13px; font-weight: 600; color: #1a7a4a; }
+
+  .divider { border: none; border-top: 1px solid #e0e8f0; margin: 4px 0 28px; }
+
+  .btn-gerar {
+    width: 100%;
+    background: #2563a8;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 18px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn-gerar:hover:not(:disabled) { background: #1a4d8a; }
+  .btn-gerar:disabled { background: #a0b8d0; cursor: not-allowed; }
+
+  #status {
+    display: none;
+    margin-top: 20px;
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 14px;
+  }
+  #status.loading { display: block; background: #eaf1fb; border: 1px solid #b0c8e8; color: #1a3a5c; }
+  #status.ok     { display: block; background: #eef8f3; border: 1px solid #a0d0b8; color: #0f5030; }
+  #status.err    { display: block; background: #fdf0ee; border: 1px solid #f0b0a8; color: #8a1a10; }
+
+  .status-row { display: flex; align-items: center; gap: 12px; }
+  .status-ico { font-size: 26px; }
+  .status-title { font-weight: 700; font-size: 15px; }
+  .status-sub { font-size: 13px; margin-top: 3px; opacity: 0.8; }
+
+  .prog-track { background: #c8daf0; border-radius: 99px; height: 6px; margin-top: 12px; overflow: hidden; }
+  .prog-fill  { height: 100%; background: #2563a8; border-radius: 99px; transition: width 0.5s; width: 0%; }
+
+  .warn { margin-top: 10px; font-size: 12px; background: #fff8e8; border: 1px solid #e8c888; border-radius: 6px; padding: 8px 12px; color: #7a5000; }
+</style>
+</head>
+<body>
+
+<div class="logo-bar">
+  <div class="logo-box">Tilibra</div>
+  <h1>Precificador de Lâminas</h1>
+</div>
+
+<div class="box">
+
+  <!-- PASSO 1 -->
+  <div class="step">
+    <div class="step-label"><span class="n">1</span> Selecione a lâmina (PDF)</div>
+    <label class="upload-btn" id="btn-pdf">
+      <input type="file" id="in-pdf" accept=".pdf">
+      <span class="u-icon">📄</span>
+      <div class="u-text">
+        <div class="u-main">Clique aqui para escolher o PDF</div>
+        <div class="u-sub">A lâmina de produtos Tilibra</div>
+      </div>
+    </label>
+  </div>
+
+  <!-- PASSO 2 -->
+  <div class="step">
+    <div class="step-label"><span class="n">2</span> Selecione a tabela de preços (Excel)</div>
+    <label class="upload-btn" id="btn-xlsx">
+      <input type="file" id="in-xlsx" accept=".xlsx,.xls,.csv">
+      <span class="u-icon">📊</span>
+      <div class="u-text">
+        <div class="u-main">Clique aqui para escolher o Excel</div>
+        <div class="u-sub">Planilha com código e preço de cada produto</div>
+      </div>
+    </label>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PASSO 3 -->
+  <button class="btn-gerar" id="btn-gerar" disabled onclick="gerar()">
+    🏷️ Gerar lâmina com preços
+  </button>
+
+  <div id="status">
+    <div class="status-row">
+      <span class="status-ico" id="s-ico">⏳</span>
+      <div>
+        <div class="status-title" id="s-title"></div>
+        <div class="status-sub" id="s-sub"></div>
+      </div>
+    </div>
+    <div class="prog-track" id="prog-track" style="display:none">
+      <div class="prog-fill" id="prog-fill"></div>
+    </div>
+    <div id="s-warn"></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+let pdfFile = null, xlsxFile = null;
+
+function setupUpload(btnId, inputId, accept, onFile) {
+  const inp = document.getElementById(inputId);
+  inp.accept = accept;
+  inp.onchange = e => e.target.files[0] && onFile(e.target.files[0]);
+}
+
+setupUpload('btn-pdf', 'in-pdf', '.pdf', f => {
+  pdfFile = f;
+  const btn = document.getElementById('btn-pdf');
+  btn.classList.add('ok');
+  btn.querySelector('.u-icon').textContent = '✅';
+  btn.querySelector('.u-main').textContent = f.name;
+  btn.querySelector('.u-sub').textContent = (f.size/1024).toFixed(0) + ' KB — PDF carregado';
+  check();
+});
+
+setupUpload('btn-xlsx', 'in-xlsx', '.xlsx,.xls,.csv', f => {
+  xlsxFile = f;
+  // Validar colunas
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {raw:false});
+      const s = rows[0] || {};
+      const kC = Object.keys(s).find(k => ['codigo','código','cod','code','sku'].includes(k.toLowerCase().trim()));
+      const kP = Object.keys(s).find(k => ['preco','preço','price','valor','vl','vlr'].includes(k.toLowerCase().trim()));
+      if (!kC || !kP) {
+        alert('A planilha precisa ter as colunas "codigo" e "preco".\nVerifique o cabeçalho.');
+        return;
+      }
+      const total = rows.filter(r => r[kC] && r[kP]).length;
+      const btn = document.getElementById('btn-xlsx');
+      btn.classList.add('ok');
+      btn.querySelector('.u-icon').textContent = '✅';
+      btn.querySelector('.u-main').textContent = f.name;
+      btn.querySelector('.u-sub').textContent = total + ' produtos carregados';
+      check();
+    } catch(e) { alert('Não foi possível ler o Excel. Tente novamente.'); }
+  };
+  reader.readAsArrayBuffer(f);
+});
+
+function check() {
+  document.getElementById('btn-gerar').disabled = !(pdfFile && xlsxFile);
+}
+
+function setStatus(cls, ico, title, sub, prog) {
+  const el = document.getElementById('status');
+  el.className = cls;
+  document.getElementById('s-ico').textContent = ico;
+  document.getElementById('s-title').textContent = title;
+  document.getElementById('s-sub').textContent = sub;
+  document.getElementById('prog-track').style.display = cls === 'loading' ? 'block' : 'none';
+  document.getElementById('s-warn').innerHTML = '';
+  if (prog !== undefined) document.getElementById('prog-fill').style.width = prog + '%';
+}
+
+async function gerar() {
+  if (!pdfFile || !xlsxFile) return;
+  document.getElementById('btn-gerar').disabled = true;
+  setStatus('loading', '⏳', 'Processando a lâmina…', 'Isso leva alguns segundos. Não feche a página.', 10);
+
+  let p = 10;
+  const timer = setInterval(() => {
+    p = Math.min(p + 2, 85);
+    document.getElementById('prog-fill').style.width = p + '%';
+  }, 600);
+
+  const fd = new FormData();
+  fd.append('pdf', pdfFile);
+  fd.append('excel', xlsxFile);
+
+  try {
+    const resp = await fetch('/processar', { method: 'POST', body: fd });
+    clearInterval(timer);
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({error: 'Erro desconhecido'}));
+      setStatus('err', '❌', 'Algo deu errado', err.error || 'Verifique os arquivos e tente novamente.');
+      document.getElementById('btn-gerar').disabled = false;
+      return;
+    }
+
+    const found = resp.headers.get('X-Found') || '0';
+    const missingStr = resp.headers.get('X-Missing') || '';
+    const missing = missingStr ? missingStr.split(',').filter(Boolean) : [];
+
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = pdfFile.name.replace(/\.pdf$/i, '') + '_precificado.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    document.getElementById('prog-fill').style.width = '100%';
+    setStatus('ok', '✅', `Pronto! ${found} preços inseridos na lâmina.`, 'O arquivo foi baixado automaticamente para o seu computador.');
+
+    if (missing.length) {
+      document.getElementById('s-warn').innerHTML =
+        `<div class="warn">⚠️ <strong>${missing.length} código(s) sem preço na planilha:</strong> ${missing.join(', ')}</div>`;
+    }
+
+  } catch(e) {
+    clearInterval(timer);
+    setStatus('err', '❌', 'Erro de conexão', 'Não foi possível conectar ao servidor.');
+  }
+  document.getElementById('btn-gerar').disabled = false;
+}
+</script>
+</body>
+</html>
